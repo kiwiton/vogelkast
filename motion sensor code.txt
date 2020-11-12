@@ -1,0 +1,41 @@
+from time import sleep
+from picamera import PiCamera
+from datetime import datetime
+from gpiozero import MotionSensor
+
+
+camera = PiCamera()
+pir = MotionSensor(4) # sensor op pin4 aand-gesloten
+time = 0
+filename = 0
+toggle = True
+
+while True:
+        if pir.motion_detected: # start recording
+                print("motion detected")
+                dtstring = datetime.now().strftime("%d"+"-"+"%m"+"-"+"%Y"+"-"+"%H%M%S")
+
+                if toggle:
+                        camera.start_recording("/media/pi/BUSB/pipics/Owl%s.h264" %dtstring)
+                        toggle = False
+                        print("started recording")      #is er beweging? dan word er gefilmd
+
+                #if no bird , no filming , reset values
+                if pir.motion_detected == False:
+                        if toggle == False:
+                                camera.stop_recording()
+                                print("stopped recording")
+                                time = 0
+                                toggle = True
+
+                if toggle == False:
+                        sleep(1)
+                        time = time + 1
+                        print(time)
+
+                if time >= 5:           # for test purpose 5 sec 5min = 300
+                        camera.stop_recording()
+                        print("stopped recording")
+                        time = 0
+                        toggle = True
+
